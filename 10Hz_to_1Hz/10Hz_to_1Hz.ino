@@ -9,8 +9,10 @@ int interruptPin = 2;
 // the flag for the 1 Hz signal
 volatile boolean flag = false;
 
+volatile int count = 0;
+
 // half period
-unsigned long halfPeriod = 5000000UL; // 5000mS = 1/2 Hz
+unsigned long halfPeriod = 50000000UL; // 500mS = 1/2 Hz
 
 
 
@@ -24,26 +26,29 @@ void setup() {
   // ISR - interrupt service routine 
   attachInterrupt(digitalPinToInterrupt(interruptPin), foo, RISING);
 
+  digitalWrite (11, LOW); // known starting level
 }
 
 
 
 void loop() {
   // put your main code here, to run repeatedly:
-  while (flag){ // avoid  loop() jitter
+  if (flag){ // avoid  loop() jitter
 
     // time critical - turn off interrupts
-    noInterrupts();
+    //noInterrupts();
   
     PINB = PINB | 0b00001000; // x-x-13-12-11-10-9-8 on Uno,
                                              // toggle output by writing 1 to input register
-    delayMicroseconds(halfPeriod);
+    delay(500);
+
+
 
     // set flag back to false
     flag = false;
     
     // not time critical
-    interrupts(); 
+    //interrupts(); 
   }
 
 }
@@ -51,6 +56,22 @@ void loop() {
 // if in the ISR, change the flag to true
 void foo() {
 
-  flag = true; 
+  
+  count++;
+
+  if (count % 10 == 0) {
+    
+   flag = true;  
+  
+  }
+
+  else {
+    
+    return;  
+    
+  }
+
+  
+
   
 }
